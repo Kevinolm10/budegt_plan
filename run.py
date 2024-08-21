@@ -7,7 +7,7 @@ SCOPE = [
     "https://www.googleapis.com/auth/drive"
     ]
 
-CREDS = Credentials.from_service_account_file('65756f82816a0ab6936ac9d578c800e607bc85fe')
+CREDS = Credentials.from_service_account_file('creds.json')
 SCOPED_CREDS = CREDS.with_scopes(SCOPE)
 GSPREAD_CLIENT = gspread.authorize(SCOPED_CREDS)
 SHEET = GSPREAD_CLIENT.open('budget_planner')
@@ -28,34 +28,47 @@ print(welcome_msg)
 
 
 def categories():
+    existing_categories = sheet1.row_values(1) 
+    existing_count = len(existing_categories) 
 
-    print("Starting your budget journey...")
-    print("Please start by entering your budget categories. Min 3 and max 10, separated by commas.")
-    print("Exampel: Travel, Lifestyle, Misc")
-    print(f"""
-    hifoiqefhqefuhoqefh
+    if existing_count >= 10:
+        print("You have already entered the maximum number of categories (10).")
+        return
 
-dofofadodpfoadpf
-    """)
+    print("Starting your budget journey...\n")
+    print(f"You have already entered {existing_count} categories.")
+    remaining_slots = 10 - existing_count
+    print(f"You can add {remaining_slots} more categories.")
+    print("Please start by entering your budget categories. Separated by commas.")
+    print("Example: Travel, Lifestyle, Misc\n")
+    
     while True:
-        categories = input("Enter your categories of choice here: ")
-        category_list = [category.strip() for category in categories.split(',')]
+        categories_input = input(
+
+            f"Enter your categories of choice here:"
+            
+            )
+        category_list = [category.strip() for category in categories_input.split(',')]
         
-        if validation(category_list):
+        if validation(category_list, existing_count):
             print("Categories are valid! You can proceed with your budgeting.")
-            sheet1.append_row(category_list)
+            
+            sheet.append_row(category_list[:remaining_slots])  
             print("Categories have been added to the sheet.")
             break  
-        else:
-            print("Invalid input. Please try again.\n")
 
-def validation(values):
-    
-    if len(values) < 3 or len(values) > 10:
-        print(f"Minimum 3 and maximum 10 categories required, you have provided {len(values)}")
+def validation(values, existing_count):
+    try:
+        total_count = len(values) + existing_count
+        if len(values) < 3 or total_count > 10:
+            raise ValueError(
+                f"Minimum 3 and maximum 10 categories allowed, you have provided {len(values)} "
+                f"and the total would be {total_count}"
+            )
+        return True
+    except ValueError as e:
+        print(f"Invalid data: {e}, please try again\n")
         return False
-
-    return True
 
 def show_menu():
 
