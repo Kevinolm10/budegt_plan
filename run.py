@@ -30,7 +30,6 @@ welcome_msg = """
 print(welcome_msg)
 
 def categories():
-    # Assuming you have already authenticated and opened your sheet
     existing_categories = sheet1.row_values(1) 
     existing_count = len(existing_categories) 
 
@@ -73,6 +72,7 @@ def validation(values, existing_count):
 def individual_budget(data):
     options = [f"{i + 1}. {', '.join(row)}" for i, row in enumerate(data)]
     return options
+    
 
 def start():
     categories()  
@@ -84,7 +84,11 @@ def budget():
         menu_entry_index = terminal_menu.show()
         print(f"You have selected: {options[menu_entry_index]}")
     else:
-        print("No budget data available to display.")
+        raise ValueError (
+            f"No budget data available to display." 
+            f"Please refer back to option 1 in the main menu"
+        )
+
 
 def exit_program():
     print("Exiting the program. Goodbye!")
@@ -94,8 +98,9 @@ from simple_term_menu import TerminalMenu
 def main():
     options = [
         "1. Input your budget categories", 
-        "2. View your budget in each category", 
-        "3. Exit"
+        "2. View your budget in each category",
+        "3. View your total budget table", 
+        "4. Exit"
     ]
     
     terminal_menu = TerminalMenu(options)
@@ -109,6 +114,8 @@ def main():
         elif categories_index == 1:
             budget()
         elif categories_index == 2:
+            total()
+        elif categories_index == 3:
             exit_program()
             break
 
