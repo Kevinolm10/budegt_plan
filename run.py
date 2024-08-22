@@ -45,7 +45,7 @@ def categories():
     while True:
         categories_input = input(
 
-            f"Enter your categories of choice here:"
+            f"Enter your categories of choice here:\n"
             
             )
         category_list = [category.strip() for category in categories_input.split(',')]
@@ -53,7 +53,7 @@ def categories():
         if validation(category_list, existing_count):
             print("Categories are valid! You can proceed with your budgeting.")
             
-            sheet.append_row(category_list[:remaining_slots])  
+            sheet1.append_row(category_list[:remaining_slots])  
             print("Categories have been added to the sheet.")
             break  
 
@@ -90,7 +90,7 @@ def exit_program():
 def main():
     while True:
         show_menu()
-        choice = input("Please choose an option (1-3): ")
+        choice = input("Please choose an option (1-3):\n")
 
         if choice == '1':
             start()
