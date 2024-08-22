@@ -12,6 +12,7 @@ SCOPED_CREDS = CREDS.with_scopes(SCOPE)
 GSPREAD_CLIENT = gspread.authorize(SCOPED_CREDS)
 SHEET = GSPREAD_CLIENT.open('budget_planner')
 
+
 sheet1 = SHEET.worksheet('sheet1')
 
 data = sheet1.get_all_values()
@@ -70,14 +71,6 @@ def validation(values, existing_count):
         print(f"Invalid data: {e}, please try again\n")
         return False
 
-def show_menu():
-
-    print("=== Main Menu ===")
-    print("1. Input your budget categories")
-    print("2. Input your budget in each category")
-    print("3. Exit")
-    print("=================\n")
-
 def start():
     categories()  
 
@@ -87,20 +80,28 @@ def budget():
 def exit_program():
     print("Exiting the program. Goodbye!")
 
-def main():
-    while True:
-        show_menu()
-        choice = input("Please choose an option (1-3):\n")
+from simple_term_menu import TerminalMenu
 
-        if choice == '1':
+def main():
+    options = [
+        "1. Input your budget categories", 
+        "2. Input your budget in each category", 
+        "3. Exit"
+    ]
+    
+    terminal_menu = TerminalMenu(options)
+    
+    while True:
+        menu_entry_index = terminal_menu.show()
+        print(f"You have selected {options[menu_entry_index]}!")
+        
+        if menu_entry_index == 0:
             start()
-        elif choice == '2':
+        elif menu_entry_index == 1:
             budget()
-        elif choice == '3':
+        elif menu_entry_index == 2:
             exit_program()
             break
-        else:
-            print("Invalid choice. Please select a valid option.")
 
 if __name__ == "__main__":
     main()
