@@ -17,18 +17,20 @@ sheet1 = SHEET.worksheet('sheet1')
 
 data = sheet1.get_all_values()
 
+
 welcome_msg = """
 *************************************************
 *                                               *
-*       Welcome to the Budget Planner!          *
+*          Welcome to the Budget Planner!       * 
+*        Your way to find economical peace      *
 *                                               *
 *************************************************
 """
 
 print(welcome_msg)
 
-
 def categories():
+    # Assuming you have already authenticated and opened your sheet
     existing_categories = sheet1.row_values(1) 
     existing_count = len(existing_categories) 
 
@@ -40,30 +42,27 @@ def categories():
     print(f"You have already entered {existing_count} categories.")
     remaining_slots = 10 - existing_count
     print(f"You can add {remaining_slots} more categories.")
-    print("Please start by entering your budget categories. Separated by commas.")
+    print("Please start by entering your budget categories, separated by commas.")
     print("Example: Travel, Lifestyle, Misc\n")
     
     while True:
-        categories_input = input(
-
-            f"Enter your categories of choice here:\n"
-            
-            )
+        categories_input = input("Enter your categories of choice here:\n")
         category_list = [category.strip() for category in categories_input.split(',')]
         
         if validation(category_list, existing_count):
             print("Categories are valid! You can proceed with your budgeting.")
+            values = [[category_list[i]] if i < len(category_list) else [""] for i in range(10)]
+            sheet1.update(range_name='A1:A10', values=values)
             
-            sheet1.append_row(category_list[:remaining_slots])  
             print("Categories have been added to the sheet.")
-            break  
+            break
 
 def validation(values, existing_count):
     try:
         total_count = len(values) + existing_count
         if len(values) < 3 or total_count > 10:
             raise ValueError(
-                f"Minimum 3 and maximum 10 categories allowed, you have provided {len(values)} "
+                f"Minimum 3 and maximum 10 categories allowed; you have provided {len(values)} "
                 f"and the total would be {total_count}"
             )
         return True
@@ -71,11 +70,21 @@ def validation(values, existing_count):
         print(f"Invalid data: {e}, please try again\n")
         return False
 
+def individual_budget(data):
+    options = [f"{i + 1}. {', '.join(row)}" for i, row in enumerate(data)]
+    return options
+
 def start():
     categories()  
 
 def budget():
-    print("Opening budgeting by category...")
+    options = individual_budget(data)
+    if options:
+        terminal_menu = TerminalMenu(options)
+        menu_entry_index = terminal_menu.show()
+        print(f"You have selected: {options[menu_entry_index]}")
+    else:
+        print("No budget data available to display.")
 
 def exit_program():
     print("Exiting the program. Goodbye!")
@@ -85,21 +94,21 @@ from simple_term_menu import TerminalMenu
 def main():
     options = [
         "1. Input your budget categories", 
-        "2. Input your budget in each category", 
+        "2. View your budget in each category", 
         "3. Exit"
     ]
     
     terminal_menu = TerminalMenu(options)
     
     while True:
-        menu_entry_index = terminal_menu.show()
-        print(f"You have selected {options[menu_entry_index]}!")
+        categories_index = terminal_menu.show()
+        print(f"You have selected: {options[categories_index]}")
         
-        if menu_entry_index == 0:
+        if categories_index == 0:
             start()
-        elif menu_entry_index == 1:
+        elif categories_index == 1:
             budget()
-        elif menu_entry_index == 2:
+        elif categories_index == 2:
             exit_program()
             break
 
