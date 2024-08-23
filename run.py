@@ -100,7 +100,7 @@ def main():
         "1. Input your budget categories", 
         "2. View your budget in each category",
         "3. View your total budget table", 
-        "4. Exit"
+        "4. Close"
     ]
     
     terminal_menu = TerminalMenu(options)
