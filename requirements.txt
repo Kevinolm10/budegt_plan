@@ -7,3 +7,4 @@ pyasn1==0.6.0
 pyasn1_modules==0.4.0
 requests-oauthlib==2.0.0
 rsa==4.9
+simple-term-menu==1.6.4
