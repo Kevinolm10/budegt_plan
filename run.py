@@ -33,7 +33,6 @@ from better_profanity import profanity
 
 def categories():
     """
-    Steps in detail:
     - The function first retrieves the current categories from the first row of the sheet and counts them.
     - If there are already 10 categories, it informs the user and exits.
     - Otherwise, it informs the user how many categories have been entered and how many more can be added.
@@ -66,11 +65,13 @@ Example: Travel, Lifestyle, Misc
 
     while True:
         categories_input = input("Enter your categories of choice here:\n")
-        category_list = [category.strip() for category in categories_input.split(',')]
-
-        # Check for profanity in each category
+        category_list = [
+            category.strip() for category in categories_input.split(',')
+        ]
         if any(profanity.contains_profanity(category) for category in category_list):
-            print("Your input contains inappropriate language. Please enter valid categories.")
+            print(f"""
+Your input contains inappropriate language. Please enter valid categories.
+                    """)
             continue
 
         if validation(category_list, existing_count):
@@ -178,6 +179,24 @@ Do you want to update another category? (yes/no):
 """).strip().lower()
         if continue_input != "yes":
             break
+
+from tabulate import tabulate
+
+def total():
+    """
+    Displays all budget data in a formatted table,
+    using Tabulate.
+    """
+    data = first_budget.get_all_values()
+    
+    if not data or all(not row for row in data):
+        print("No data available.")
+        return
+
+    table = tabulate(data, headers="firstrow", tablefmt="grid")
+    print(table)
+
+    input("Press Enter to return to the main menu...")
 
 
 def exit_program():
