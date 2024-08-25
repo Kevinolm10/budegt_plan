@@ -10,12 +10,12 @@ SCOPE = [
 CREDS = Credentials.from_service_account_file('creds.json')
 SCOPED_CREDS = CREDS.with_scopes(SCOPE)
 GSPREAD_CLIENT = gspread.authorize(SCOPED_CREDS)
-SHEET = GSPREAD_CLIENT.open('budget_planner')
+SHEET = GSPREAD_CLIENT.open('budget_plan')
 
 
-sheet1 = SHEET.worksheet('sheet1')
+first_budget = SHEET.worksheet('first_budget')
 
-data = sheet1.get_all_values()
+data = first_budget.get_all_values()
 
 
 welcome_msg = """
@@ -29,6 +29,8 @@ welcome_msg = """
 
 print(welcome_msg)
 
+from better_profanity import profanity
+
 def categories():
     """
     Steps in detail:
@@ -38,11 +40,14 @@ def categories():
     - It then enters a loop where the user is prompted to input categories separated by commas.
     - The input is split into a list of categories, and any extra whitespace around them is removed.
     - The `validation` function is called to ensure the input is valid.
-    - If the input is valid, it updates the sheet with the new categories and exits the loop.
-    - If the input is not valid, it informs the user and prompts for input again.
+    - If the input is valid and free of profanity, it updates the sheet with the new categories and exits the loop.
+    - If the input is not valid or contains profanity, it informs the user and prompts for input again.
     """
-    existing_categories = sheet1.row_values(1) 
-    existing_count = len(existing_categories) 
+
+    profanity.load_censor_words()
+
+    existing_categories = first_budget.row_values(1)
+    existing_count = len(existing_categories)
 
     if existing_count >= 10:
         print("You have already entered the maximum number of categories (10).")
@@ -58,21 +63,22 @@ Please start by entering your budget categories, separated by commas.
 Example: Travel, Lifestyle, Misc
 
     """)
-    
+
     while True:
         categories_input = input("Enter your categories of choice here:\n")
-        category_list = [
-        category.strip() for category in categories_input.split(',')
-        ]
-        
+        category_list = [category.strip() for category in categories_input.split(',')]
+
+        # Check for profanity in each category
+        if any(profanity.contains_profanity(category) for category in category_list):
+            print("Your input contains inappropriate language. Please enter valid categories.")
+            continue
+
         if validation(category_list, existing_count):
             print("Categories are valid! You can proceed with your budgeting.")
             values = [
-                [
-                    category_list[i]
-                ] if i < len(category_list) else [""] for i in range(10)
+                [category_list[i]] if i < len(category_list) else [""] for i in range(10)
             ]
-            sheet1.update(range_name='A1:A10', values=values)
+            first_budget.update(range_name='A1:A10', values=values)
             
             print("Categories have been added to the sheet.")
             break
@@ -122,7 +128,7 @@ def budget():
     The budget amount will be stored in the B column of the selected category's row.
     It also adds a "Total" row in column A and calculates the total sum of the budget in the worksheet.
     """
-    categories = sheet1.range('A1:A10')
+    categories = first_budget.range('A1:A10')
     
     categories = [cell.value for cell in categories if cell.value]
 
@@ -140,7 +146,7 @@ def budget():
         row_index = menu_entry_index + 1  
         print("Current categories and their budgets:")
         for i, category in enumerate(categories, start=1):
-            current_budget = sheet1.cell(i, 2).value
+            current_budget = first_budget.cell(i, 2).value
             print(
                 f"{i}. {category}: {
                     current_budget if current_budget else 'No budget set'
@@ -153,7 +159,7 @@ def budget():
                     f"""
 Enter your budget for {selected_category}:
                 """))
-                sheet1.update_cell(row_index, 2, budget_input) 
+                first_budget.update_cell(row_index, 2, budget_input) 
                 print(
                     f"""
 Budget for {selected_category} has been updated to 
@@ -164,8 +170,8 @@ Budget for {selected_category} has been updated to
                 print("Invalid input. Please enter a numerical value.")
         
         total_row = len(categories) + 2  
-        sheet1.update_cell(total_row, 1, "Total")  
-        sheet1.update_cell(total_row, 2, f'=SUM(B1:B{len(categories)})')  
+        first_budget.update_cell(total_row, 1, "Total")  
+        first_budget.update_cell(total_row, 2, f'=SUM(B1:B{len(categories)})')  
         
         continue_input = input(f"""
 Do you want to update another category? (yes/no): 
