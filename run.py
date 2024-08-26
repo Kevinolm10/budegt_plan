@@ -25,31 +25,20 @@ data = first_budget.get_all_values()
 
 
 def categories():
-    """
-    - Retrieves categories from column A (A1 to A10) and counts them.
-    - If there are 10 categories, it informs the user and exits.
-    - Otherwise, it informs the user how many categories have been entered.
-    - The user is informed how many more categories can be added.
-    - Prompts the user to input categories separated by commas.
-    - Splits the input into a list, removing extra whitespace.
-    - Calls the `validation` function to check if the input is valid.
-    - If valid and free of profanity, updates the sheet and exits.
-    - If invalid or contains profanity, it informs the user and prompts again.
-    """
-
     profanity.load_censor_words()
 
     existing_categories = first_budget.col_values(1)
     existing_categories = [
         category for category in existing_categories 
         if category and category != 'Total'
-        ]
+    ]
     existing_count = len(existing_categories)
 
     if existing_count >= 10:
         print(f"""
-        You have already entered the maximum number of categories (10)."""
-        )
+        You have already entered the maximum number of categories (10).
+        Please refer to option 4 and remove one or more categories.
+        """)
         return
 
     remaining_slots = 10 - existing_count
@@ -60,7 +49,8 @@ You have already entered {existing_count} categories.
 
 You can add {remaining_slots} more categories.
 
-Please start by entering your budget categories, separated by commas.
+Please proceed by entering your budget categories reflecting your saving goals,
+all separated by commas.
 
 Example: Travel, Lifestyle, Misc
     """)
@@ -70,7 +60,7 @@ Example: Travel, Lifestyle, Misc
         category_list = [
             category.strip() 
             for category in categories_input.split(',') if category.strip()
-            ]
+        ]
 
         if any(profanity.contains_profanity(category) 
         for category in category_list):
@@ -82,43 +72,61 @@ Example: Travel, Lifestyle, Misc
 
         all_categories = existing_categories + category_list
         unique_categories = list(dict.fromkeys(all_categories))
-        unique_categories = unique_categories[:10]
+        total_categories = len(unique_categories)
 
-        if validation(unique_categories, existing_count):
-            print("Categories are valid! You can proceed with your budgeting.")
+        if validation(
+            new_categories=category_list,
+            existing_count=existing_count, 
+            total_categories=total_categories
+            ):
+            print(f"""
+            Categories are valid! 
+            You can proceed with your budgeting.
+            """)
 
-            values = [[unique_categories[i]] 
-            if i < len(unique_categories) else [""] for i in range(10)]
-            first_budget.update(range_name='A1:A10', values=values)
+            values = first_budget.range('A1:A10')
+            update_values = []
+            category_index = 0
 
-            print("Categories have been added to the sheet.")
+            for cell in values:
+                if cell.value == "" and category_index < len(category_list):
+                    cell.value = category_list[category_index]
+                    update_values.append(cell)
+                    category_index += 1
+
+            if update_values:
+                first_budget.update_cells(update_values)
+                print("Categories have been added to the sheet.")
+            else:
+                print("No space left to add new categories.")
             break
 
 
-def validation(values, existing_count):
+
+def validation(new_categories, existing_count, total_categories):
     """
     Validates the list of new categories entered by the user.
 
     Parameters:
-    - values: List of new categories entered by the user.
+    - new_categories: List of new categories entered by the user.
     - existing_count: Number of categories already present.
+    - total_categories: Total number of categories including the new ones.
 
     Returns:
     - True if validation passes.
     - False and prints an error message if validation fails.
     """
     try:
-        total_count = len(values) + existing_count
-        if len(values) < 3 or total_count > 10:
-            raise ValueError(
-                f"""
-Minimum 3 and maximum 10 categories allowed; you have provided {len(values)}
-and the total would be {total_count} (excluding the total row)."""
-            )
+        if total_categories > 10:
+            raise ValueError(f"""
+    Maximum 10 categories allowed; you have provided {len(new_categories)}"
+    and the total would be {total_categories} (excluding the total row)."
+            """)
         return True
     except ValueError as e:
         print(f"Invalid data: {e}, please try again\n")
         return False
+
 
 
 def individual_budget(data):
@@ -140,8 +148,8 @@ def budget():
     """
     - Allows the user to select a category and input a budget amount.
     - Stores the value in the corresponding cell in the Google Sheet.
-    - The budget amount is stored in the B column of the selected category's row.
-    - Adds a "Total" row in column A and calculates the total sum in the worksheet.
+    - The budget is stored in column b of the selected category
+    - Adds a "Total" row in column A and calculates the total sum in the sheet.
     """
     row_range = first_budget.range('A1:A10')
     categories = [
@@ -186,7 +194,7 @@ def budget():
                 print("Invalid input. Please enter a numerical value.")
 
         continue_input = input(f"""
-        Do you want to update another category? (yes/no): 
+Do you want to update another category? (yes/no): 
         """).strip().lower()
         if continue_input != "yes":
             break
@@ -220,7 +228,10 @@ def remove():
     The selected category's row will be deleted from the sheet.
     """
     row_range = first_budget.range('A1:A10')
-    categories = [cell.value for cell in row_range if cell.value and cell.value != "Total"]
+    categories = [
+        cell.value for cell in row_range 
+        if cell.value and cell.value != "Total"
+        ]
 
     if not categories:
         print("No categories available to remove.")
@@ -235,13 +246,16 @@ def remove():
         row_index = menu_entry_index + 1
 
         confirmation = input(f"""
-        Are you sure you want to remove the category '{selected_category}'? 
-        (yes/no): 
+Are you sure you want to remove the category '{selected_category}'? 
+(yes/no): 
         """).strip().lower()
 
         if confirmation == "yes":
             first_budget.delete_rows(row_index)
-            print(f"Category '{selected_category}' has been removed from the budget table.")
+            print(f"""
+            Category '{selected_category}', 
+            has been removed from the budget table.
+            """)
             break
         else:
             print("No category was removed.")
