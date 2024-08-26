@@ -24,18 +24,6 @@ first_budget = SHEET.worksheet('first_budget')
 data = first_budget.get_all_values()
 
 
-welcome_msg = """
-*************************************************
-*                                               *
-*          Welcome to the Budget Planner!       *
-*        Your way to find economical peace      *
-*                                               *
-*************************************************
-"""
-
-print(welcome_msg)
-
-
 def categories():
     """
 - Retrieves categories from the first row of the sheet and counts them.
@@ -65,8 +53,11 @@ def categories():
 Starting your budget journey...
 
 You have already entered {existing_count} categories.
+
 You can add {remaining_slots} more categories.
+
 Please start by entering your budget categories, separated by commas.
+
 Example: Travel, Lifestyle, Misc
 
     """)
@@ -140,19 +131,20 @@ def individual_budget(data):
 
 def budget():
     """
-- Allows the user to select a category and input a budget amount.
-- Stores the value in the corresponding cell in the Google Sheet.
-- The budget amount is stored in the B column of the selected category's row.
-- Adds a "Total" row in column A and calculates the total sum in the worksheet.
-"""
-    categories = first_budget.range('A1:A10')
-    categories = [cell.value for cell in categories if cell.value]
+    - Allows the user to select a category and input a budget amount.
+    - Stores the value in the corresponding cell in the Google Sheet.
+    - The budget amount is stored in the B column of the selected category's row.
+    - Adds a "Total" row in column A and calculates the total sum in the worksheet.
+    """
+    row_range = first_budget.range('A1:A10')
+    categories = [
+        cell.value for cell in row_range if cell.value and cell.value != "Total"
+        ]
 
     if not categories:
         print(f"""
-        No categories available.
-        Please start by entering your budget categories.
-        """)
+No categories available. Please start by entering your budget categories.
+""")
         return
 
     while True:
@@ -160,42 +152,41 @@ def budget():
         menu_entry_index = terminal_menu.show()
 
         selected_category = categories[menu_entry_index]
-        row_index = menu_entry_index + 1
+        row_index = menu_entry_index + 1 
+
         print("Current categories and their budgets:")
         for i, category in enumerate(categories, start=1):
             current_budget = first_budget.cell(i, 2).value
-            print(
-                f"{i}. {category}: {
-                    current_budget if current_budget else 'No budget set'
-                }"
-            )
+            print(f"""
+            {i}. {category}: {
+                current_budget if current_budget else 'No budget set'
+                }
+            """)
 
         while True:
             try:
                 budget_input = float(input(
-                    f"""
-Enter your budget for {selected_category}:
-                """))
+                    f"Enter your budget for {selected_category}: "
+                    ))
                 first_budget.update_cell(row_index, 2, budget_input)
-                print(
-                    f"""
-Budget for {selected_category} has been updated to
-{budget_input}."""
-                    )
+                print(f"""
+                Budget for {selected_category} has been updated to {
+                    budget_input
+                    }.
+                """)
                 break
             except ValueError:
                 print("Invalid input. Please enter a numerical value.")
 
-        total_row = len(categories) + 2
-        first_budget.update_cell(total_row, 1, "Total")
-        first_budget.update_cell(total_row, 2, f'=SUM(B1:B{len(categories)})')
-
-        continue_input = input(f"""
-Do you want to update another category? (yes/no):
-""").strip().lower()
+        continue_input = input(
+            "Do you want to update another category? (yes/no): "
+            ).strip().lower()
         if continue_input != "yes":
             break
 
+    total_row = len(categories) + 2  
+    first_budget.update_cell(total_row, 1, "Total")
+    first_budget.update_cell(total_row, 2, f'=SUM(B1:B{len(categories)})')
 
 def total():
     """
@@ -208,7 +199,7 @@ def total():
         print("No data available.")
         return
 
-    table = tabulate(data, headers="firstrow", tablefmt="grid")
+    table = tabulate(data, headers="Categories, Amount", tablefmt="grid")
     print(table)
 
     input("Press Enter to return to the main menu...")
@@ -224,26 +215,38 @@ def main():
     The main function that presents the user with a menu to navigate different
     options of the budgeting tool.
     """
-    options = [
+
+welcome_msg = """
+*************************************************
+*                                               *
+*          Welcome to the Budget Planner!       *
+*        Your way to find economical peace      *
+*                                               *
+*************************************************
+"""
+
+print(welcome_msg)
+
+options = [
         "1. Input your budget categories",
         "2. Input amount of money in each category",
         "3. View your total budget table",
         "4. Close"
     ]
 
-    terminal_menu = TerminalMenu(options)
+terminal_menu = TerminalMenu(options)
 
-    while True:
-        categories_index = terminal_menu.show()
-        print(f"You have selected: {options[categories_index]}")
+while True:
+        menu_options_index = terminal_menu.show()
+        print(f"You have selected: {options[menu_options_index]}")
 
-        if categories_index == 0:
+        if menu_options_index == 0:
             categories()
-        elif categories_index == 1:
+        elif menu_options_index == 1:
             budget()
-        elif categories_index == 2:
+        elif menu_options_index == 2:
             total()
-        elif categories_index == 3:
+        elif menu_options_index == 3:
             exit_program()
             break
 
