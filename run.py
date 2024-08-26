@@ -56,7 +56,11 @@ Example: Travel, Lifestyle, Misc
     """)
 
     while True:
-        categories_input = input("Enter your categories of choice here:\n")
+        categories_input = input("Enter your categories of choice here or type 'back' to return to the main menu:\n")
+        
+        if categories_input.lower() == "back":
+            return 
+
         category_list = [
             category.strip() 
             for category in categories_input.split(',') if category.strip()
@@ -103,6 +107,7 @@ Example: Travel, Lifestyle, Misc
 
 
 
+
 def validation(new_categories, existing_count, total_categories):
     """
     Validates the list of new categories entered by the user.
@@ -146,26 +151,30 @@ def individual_budget(data):
 
 def budget():
     """
-    - Allows the user to select a category and input a budget amount.
-    - Stores the value in the corresponding cell in the Google Sheet.
-    - The budget is stored in column b of the selected category
-    - Adds a "Total" row in column A and calculates the total sum in the sheet.
+    Allows the user to select a category and input a budget amount.
+    Stores the value in the corresponding cell in the Google Sheet.
+    The budget is stored in column b of the selected category.
+    Adds a "Total" row in column A and calculates the total sum in the sheet.
     """
     row_range = first_budget.range('A1:A10')
     categories = [
         cell.value for cell in row_range 
         if cell.value and cell.value != "Total"
-        ]
+    ]
 
     if not categories:
         print(f"""
         No categories available. 
-        Please start by entering your budget categories.""")
+        Please start by entering your budget categories.
+        """)
         return
 
     while True:
-        terminal_menu = TerminalMenu(categories)
+        terminal_menu = TerminalMenu(categories + ["Back to Main Menu"])
         menu_entry_index = terminal_menu.show()
+
+        if menu_entry_index == len(categories):
+            return
 
         selected_category = categories[menu_entry_index]
         row_index = menu_entry_index + 1
@@ -174,30 +183,32 @@ def budget():
         for i, category in enumerate(categories, start=1):
             current_budget = first_budget.cell(i, 2).value
             print(f"""
-            {i}. {category}: {current_budget if current_budget else 
-            'No budget set'}
+            {i}. {category}: {current_budget if current_budget else 'No budget set'}
             """)
 
         while True:
             try:
                 budget_input = float(input(f"""
-                Enter your budget for {selected_category}:
+                Enter your budget for {selected_category} (or type 'back' to return to the main menu):
                 """))
+
                 first_budget.update_cell(row_index, 2, budget_input)
                 print(f"""
-                Budget for {selected_category} has been updated to {
-                    budget_input
-                    }.
+                Budget for {selected_category} has been updated to {budget_input}.
                 """)
                 break
             except ValueError:
-                print("Invalid input. Please enter a numerical value.")
+                print("Invalid input. Please enter a numerical value or type 'back' to return to the main menu.")
+            
+            if budget_input == "back":
+                return
 
         continue_input = input(f"""
-Do you want to update another category? (yes/no): 
+Do you want to update another category? (yes/no or 'back' to return to the main menu): 
         """).strip().lower()
-        if continue_input != "yes":
-            break
+
+        if continue_input == "back" or continue_input != "yes":
+            return
 
     total_row = len(categories) + 1
     first_budget.update_cell(total_row, 1, "Total")
@@ -219,7 +230,8 @@ def total():
     table = tabulate(data, headers=headers, tablefmt="grid")
     print(table)
 
-    input("Press Enter to return to the main menu...")
+    input("Press Enter to return to the main menu or type 'back' to go back:")
+    return
 
 
 def remove():
@@ -231,36 +243,40 @@ def remove():
     categories = [
         cell.value for cell in row_range 
         if cell.value and cell.value != "Total"
-        ]
+    ]
 
     if not categories:
         print("No categories available to remove.")
         return
 
     while True:
-        print("Select a category to remove:")
-        terminal_menu = TerminalMenu(categories)
+        terminal_menu = TerminalMenu(categories + ["Back to Main Menu"])
         menu_entry_index = terminal_menu.show()
+
+        if menu_entry_index == len(categories):
+            return
 
         selected_category = categories[menu_entry_index]
         row_index = menu_entry_index + 1
 
         confirmation = input(f"""
 Are you sure you want to remove the category '{selected_category}'? 
-(yes/no): 
+(yes/no or 'back' to return to the main menu): 
         """).strip().lower()
+
+        if confirmation == "back":
+            return
 
         if confirmation == "yes":
             first_budget.delete_rows(row_index)
             print(f"""
-            Category '{selected_category}', 
+            Category '{selected_category}' 
             has been removed from the budget table.
             """)
             break
         else:
             print("No category was removed.")
             break
-
 
 
 def exit_program():
