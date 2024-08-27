@@ -27,11 +27,22 @@ data = first_budget.get_all_values()
 
 
 def categories():
+    """
+    - Retrieves categories from column A (A1 to A10) and counts them.
+    - If there are 10 categories, it informs the user and exits.
+    - Otherwise, it informs the user how many categories have been entered.
+    - The user is informed how many more categories can be added.
+    - Prompts the user to input categories separated by commas.
+    - Splits the input into a list, removing extra whitespace.
+    - Calls the `validation` function to check if the input is valid.
+    - If valid and free of profanity, updates the sheet and exits.
+    - If invalid or contains profanity, it informs the user and prompts again.
+    """
     profanity.load_censor_words()
 
     existing_categories = first_budget.col_values(1)
     existing_categories = [
-        category for category in existing_categories 
+        category for category in existing_categories
         if category and category != 'Total'
     ]
     existing_count = len(existing_categories)
@@ -59,23 +70,26 @@ Example: Travel, Lifestyle, Misc
 
     while True:
         categories_input = input(Fore.BLUE + f"""
-        Enter your categories of choice here 
+        Enter your categories of choice here
         or type 'back' to return to the main menu:\n
             """)
-        
+
         if categories_input.lower() == "back":
-            return 
+            return
 
         category_list = [
-            category.strip() 
+            category.strip()
             for category in categories_input.split(',') if category.strip()
         ]
 
-        if any(profanity.contains_profanity(category) 
-        for category in category_list):
+        if any(profanity.contains_profanity(
+            category
+            )
+            for category
+                in category_list):
             print(Fore.RED + f"""
-            Your input contains inappropriate language. 
-            Please enter valid categories.
+Your input contains inappropriate language.
+Please enter valid categories.
             """)
             continue
 
@@ -85,11 +99,11 @@ Example: Travel, Lifestyle, Misc
 
         if validation(
             new_categories=category_list,
-            existing_count=existing_count, 
+            existing_count=existing_count,
             total_categories=total_categories
-            ):
+        ):
             print(Fore.GREEN + f"""
-            Categories are valid! 
+            Categories are valid!
             You can proceed with your budgeting.
             """)
 
@@ -109,8 +123,6 @@ Example: Travel, Lifestyle, Misc
             else:
                 print(Fore.RED + "No space left to add new categories.")
             break
-
-
 
 
 def validation(new_categories, existing_count, total_categories):
@@ -138,7 +150,6 @@ def validation(new_categories, existing_count, total_categories):
         return False
 
 
-
 def individual_budget(data):
     """
     Prepares a list of budget categories with
@@ -163,17 +174,15 @@ def budget():
     """
     row_range = first_budget.range('A1:A10')
     categories = [
-        cell.value for cell in row_range 
+        cell.value for cell in row_range
         if cell.value and cell.value != "Total"
     ]
-
     if not categories:
         print(Fore.YELLOW + f"""
-        No categories available. 
+        No categories available.
         Please start by entering your budget categories.
         """)
         return
-
     while True:
         terminal_menu = TerminalMenu(
             categories + ["Back to Main Menu"]
@@ -190,12 +199,16 @@ def budget():
         for i, category in enumerate(categories, start=1):
             current_budget = first_budget.cell(i, 2).value
             print(f"""
-            {i}. {category}: {current_budget if current_budget else Fore.YELLOW + 'No budget set'}
+            {i}. {category}: {
+                current_budget
+                if current_budget else Fore.YELLOW + 'No budget set'
+                }
             """)
-
         while True:
             budget_input = input(Fore.BLUE + f"""
-                Enter your budget for {selected_category} (or type 'back' to return to the main menu):
+                Enter your budget for {
+                    selected_category
+                    } (or type 'back' to return to the main menu):
             """)
 
             if budget_input.lower() == "back":
@@ -205,19 +218,24 @@ def budget():
                 budget_input = float(budget_input)
                 first_budget.update_cell(row_index, 2, budget_input)
                 print(f"""
-                Budget for {selected_category} has been updated to {budget_input}.
+                Budget for {
+                    selected_category
+                    } has been updated to {budget_input}.
                 """)
                 break
             except ValueError:
-                print(Fore.RED + "Invalid input. Please enter a numerical value or type 'back' to return to the main menu.")
-            
+                print(Fore.RED + f"""
+Invalid input. Please enter a numerical value
+or type 'back' to return to the main menu.
+""")
+
         continue_input = input(Fore.YELLOW + f"""
-Do you want to update another category? (yes/no or 'back' to return to the main menu): 
+Do you want to update another category?
+(yes/no or 'back' to return to the main menu):
         """).strip().lower()
 
         if continue_input == "back" or continue_input != "yes":
             break
-
     total_row = None
     for i, cell in enumerate(first_budget.col_values(1), start=1):
         if cell.lower() == "total":
@@ -233,7 +251,7 @@ Do you want to update another category? (yes/no or 'back' to return to the main 
     first_budget.update_cell(total_row, 2, total_formula)
 
     print(Fore.GREEN + f"""
-The total budget has been updated. 
+The total budget has been updated.
 You can view the total at the bottom of the categories in your Google Sheet.
 """)
 
@@ -253,7 +271,9 @@ def total():
     table = tabulate(data, headers=headers, tablefmt="grid")
     print(table)
 
-    input(Fore.BLUE + "Press Enter to return to the main menu or type 'back' to go back:")
+    input(Fore.BLUE + f"""
+    Press Enter to return to the main menu
+    or type 'back' to go back:""")
     return
 
 
@@ -264,14 +284,13 @@ def remove():
     """
     row_range = first_budget.range('A1:A10')
     categories = [
-        cell.value for cell in row_range 
+        cell.value for cell in row_range
         if cell.value and cell.value != "Total"
     ]
 
     if not categories:
         print(Fore.RED + "No categories available to remove.")
         return
-
     while True:
         terminal_menu = TerminalMenu(categories + ["Back to Main Menu"])
         menu_entry_index = terminal_menu.show()
@@ -283,8 +302,8 @@ def remove():
         row_index = menu_entry_index + 1
 
         confirmation = input(Fore.YELLOW + f"""
-Are you sure you want to remove the category '{selected_category}'? 
-(yes/no or 'back' to return to the main menu): 
+Are you sure you want to remove the category '{selected_category}'?
+(yes/no or 'back' to return to the main menu):
         """).strip().lower()
 
         if confirmation == "back":
@@ -293,7 +312,7 @@ Are you sure you want to remove the category '{selected_category}'?
         if confirmation == "yes":
             first_budget.delete_rows(row_index)
             print(Fore.RED + f"""
-            Category '{selected_category}' 
+            Category '{selected_category}'
             has been removed from the budget table.
             """)
             break
@@ -313,6 +332,7 @@ def main():
     options of the budgeting tool.
     """
 
+
 welcome_msg = """
 *************************************************
 *                                               *
@@ -321,6 +341,7 @@ welcome_msg = """
 *                                               *
 *************************************************
 """
+
 
 print(Fore.GREEN + welcome_msg)
 
@@ -343,21 +364,20 @@ options = [
 terminal_menu = TerminalMenu(options)
 
 while True:
-        menu_options_index = terminal_menu.show()
-        print(Fore.BLUE + f"You have selected: {options[menu_options_index]}")
+    menu_options_index = terminal_menu.show()
+    print(Fore.BLUE + f"You have selected: {options[menu_options_index]}")
 
-        if menu_options_index == 0:
-            categories()
-        elif menu_options_index == 1:
-            budget()
-        elif menu_options_index == 2:
-            total()
-        elif menu_options_index == 3:
-            remove()
-        elif menu_options_index == 4:
-            exit_program()
-            break
-
+    if menu_options_index == 0:
+        categories()
+    elif menu_options_index == 1:
+        budget()
+    elif menu_options_index == 2:
+        total()
+    elif menu_options_index == 3:
+        remove()
+    elif menu_options_index == 4:
+        exit_program()
+        break
 
 if __name__ == "__main__":
     main()
