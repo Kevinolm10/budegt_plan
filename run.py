@@ -105,7 +105,7 @@ Example: Travel, Lifestyle, Misc
 
             if update_values:
                 first_budget.update_cells(update_values)
-                print(FORE.GREEN + "Categories have been added to the sheet.")
+                print(Fore.GREEN + "Categories have been added to the sheet.")
             else:
                 print(Fore.RED + "No space left to add new categories.")
             break
@@ -158,7 +158,7 @@ def budget():
     """
     Allows the user to select a category and input a budget amount.
     Stores the value in the corresponding cell in the Google Sheet.
-    The budget is stored in column b of the selected category.
+    The budget is stored in column B of the selected category.
     Adds a "Total" row in column A and calculates the total sum in the sheet.
     """
     row_range = first_budget.range('A1:A10')
@@ -177,7 +177,7 @@ def budget():
     while True:
         terminal_menu = TerminalMenu(
             categories + ["Back to Main Menu"]
-            )
+        )
         menu_entry_index = terminal_menu.show()
 
         if menu_entry_index == len(categories):
@@ -194,11 +194,15 @@ def budget():
             """)
 
         while True:
-            try:
-                budget_input = float(input(Fore.BLUE + f"""
+            budget_input = input(Fore.BLUE + f"""
                 Enter your budget for {selected_category} (or type 'back' to return to the main menu):
-                """))
+            """)
 
+            if budget_input.lower() == "back":
+                return
+
+            try:
+                budget_input = float(budget_input)
                 first_budget.update_cell(row_index, 2, budget_input)
                 print(f"""
                 Budget for {selected_category} has been updated to {budget_input}.
@@ -207,19 +211,31 @@ def budget():
             except ValueError:
                 print(Fore.RED + "Invalid input. Please enter a numerical value or type 'back' to return to the main menu.")
             
-            if budget_input == "back":
-                return
-
         continue_input = input(Fore.YELLOW + f"""
 Do you want to update another category? (yes/no or 'back' to return to the main menu): 
         """).strip().lower()
 
         if continue_input == "back" or continue_input != "yes":
-            return
+            break
 
-    total_row = len(categories) + 1
-    first_budget.update_cell(total_row, 1, "Total")
-    first_budget.update_cell(total_row, 2, f'=SUM(B1:B{len(categories)})')
+    total_row = None
+    for i, cell in enumerate(first_budget.col_values(1), start=1):
+        if cell.lower() == "total":
+            total_row = i
+            break
+
+    if not total_row:
+        total_row = len(categories) + 1
+        first_budget.update_cell(total_row, 1, "Total")
+
+    last_row = len(categories)
+    total_formula = f'=SUM(B1:B{last_row})'
+    first_budget.update_cell(total_row, 2, total_formula)
+
+    print(Fore.GREEN + f"""
+The total budget has been updated. 
+You can view the total at the bottom of the categories in your Google Sheet.
+""")
 
 
 def total():
