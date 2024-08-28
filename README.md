@@ -198,6 +198,8 @@ The program itself is simple to use and self explanetory through its amount of f
 
     - The categories function does sometimes not update the columns correctly or it misscounts how many inputs has already been made.
 
+    - When using simple terminal and colorama together, it messes with the menu.
+
 ---
 ## Testing
 
@@ -227,20 +229,19 @@ The program has through its development been tested regurarly to make sure there
 ### To deploy the project to Heroku so it can be run as a remote web application:
 
   1. Create your own GitHub repository to host the code.
-  1. Run the command `git remote set-url origin <Your GitHub Repo Path>` to set the remote repository location to your repository.
 
   1. Push the files to your repository with the following command:
   `git push`
-  1. Create a Heroku account if you don't already have one here [Heroku](https://dashboard.heroku.com).
-  1. Create a new Heroku application on the following page here [New Heroku App](https://dashboard.heroku.com/apps):
+  1. Create or sign in to your heroku account here [Heroku](https://dashboard.heroku.com).
+  1. Create a new heroku app here [New Heroku App](https://dashboard.heroku.com/apps):
 
-      - ![New Heroku App](documentation/heroku_login.png)
+      - ![New Heroku App](documentation/heroku_apps.png)
 
   1. Go to the Deploy tab:
 
       - ![Deploy Tab](documentation/heroku_deploy.png)
 
-      - ![Deployment Method](documentation/heroku_git.png.png)
+      - ![Deployment Method](documentation/heroku_git.png)
 
   1. Link your GitHub account and connect the application to the repository you created.
 
@@ -275,11 +276,11 @@ The program has through its development been tested regurarly to make sure there
 
       - Wait for the completion of the deployment.
 
-      - ![Deploying Branch](documentation/deployment/deploying_branch.png)
+      - ![Deploying Branch](documentation/heroku_build.png)
 
-  1. Click "Open app" to launch the application inside a web page.
+  1. Click open app to launch your app
 
-      - ![View Button](documentation/deployment/view_app.png)
+      - ![View Button](documentation/heroku_open.png)
 
 
 ---
