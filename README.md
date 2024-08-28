@@ -224,6 +224,64 @@ The program has through its development been tested regurarly to make sure there
 ---
 ## Deployment
 
+### To deploy the project to Heroku so it can be run as a remote web application:
+
+  1. Create your own GitHub repository to host the code.
+  1. Run the command `git remote set-url origin <Your GitHub Repo Path>` to set the remote repository location to your repository.
+
+  1. Push the files to your repository with the following command:
+  `git push`
+  1. Create a Heroku account if you don't already have one here [Heroku](https://dashboard.heroku.com).
+  1. Create a new Heroku application on the following page here [New Heroku App](https://dashboard.heroku.com/apps):
+
+      - ![New Heroku App](documentation/heroku_login.png)
+
+  1. Go to the Deploy tab:
+
+      - ![Deploy Tab](documentation/heroku_deploy.png)
+
+      - ![Deployment Method](documentation/heroku_git.png.png)
+
+  1. Link your GitHub account and connect the application to the repository you created.
+
+      - ![Link GitHub account](documentation/heroku_appcon.png)
+
+  1. Go to the Settings tab:
+  
+      - ![Settings Tab](documentation/heroku_settings.png)
+
+  1. Click "Add buildpack":
+
+      - ![Add Buildpack](documentation/heroku_buildpack.png)
+
+  1. Add the Python and Node.js buildpacks in the following order:
+     - ![Add Python and Node.js](documentation/heroku_add.png)
+
+  1. Click "Reveal Config Vars."
+
+      - ![Reveal Config Vars](documentation/heroku_config.png)
+
+  1. Add 1 new Config Vars:
+      - Key: PORT Value: 8000
+      - *This Config was provided by [CODE INSTITUTE](https://codeinstitute.net/)*.
+
+  1. Go back to the Deploy tab:
+
+      - ![Deploy Tab](documentation/heroku_deploy.png)
+
+  1. Click "Deploy Branch":
+
+      - ![Deploy Branch](documentation/heroku_branch.png)
+
+      - Wait for the completion of the deployment.
+
+      - ![Deploying Branch](documentation/deployment/deploying_branch.png)
+
+  1. Click "Open app" to launch the application inside a web page.
+
+      - ![View Button](documentation/deployment/view_app.png)
+
+
 ---
 ## Credits
 - I want to credit heroku for hosting the program. [Heroku](https://www.heroku.com/)
